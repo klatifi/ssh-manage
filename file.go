@@ -42,7 +42,13 @@ func writeFile(d *diskv.Diskv) error {
 		h = append(h, t)
 	}
 
-	fo, err := os.Create("config")
+	home, err := getHome()
+	if err != nil {
+		return errors.New("failed to get vaild home directory")
+	}
+
+	configFile := home + ".ssh/config"
+	fo, err := os.Create(configFile)
 	if err != nil {
 		return errors.New("could not write SSH configuration file")
 	}
