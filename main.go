@@ -97,7 +97,7 @@ func (h *Host) interactiveConfig() error {
 		}
 		h.Port = int8(port)
 	} else {
-		h.Port = 22
+		h.Port = getPort()
 	}
 
 	fmt.Print("User on server: ")
@@ -143,13 +143,13 @@ func main() {
 		glog.Errorln(err)
 		os.Exit(1)
 	}
-	
-	envFile := home+"/.ssh-manage.env"
+
+	envFile := home + "/.ssh-manage.env"
 	_, err = os.Stat(envFile)
 	if err == nil {
 		loadConfig(envFile)
 	}
-	
+
 	d := diskv.New(diskv.Options{
 		BasePath:     "data", // where the data is stored
 		Transform:    BlockTransform,

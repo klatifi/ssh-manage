@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
+	"os"
 	"os/user"
-	
+	"strconv"
+
 	"github.com/subosito/gotenv"
 )
 
@@ -30,7 +32,18 @@ func loadConfig(envFile string) {
 	gotenv.Load()
 }
 
-// Return the default SSH port
+// Return the default SSH port, tries fetching from the environment first.
 func getPort() int8 {
-	return 22
+	var port int8
+	envPort := os.Getenv("SSH-PORT")
+	if envPort != "" {
+		p, err := strconv.Atoi(envPort)
+		if err != nil {
+			return 22
+		}
+		port = int8(p)
+	} else {
+		port = 22
+	}
+	return port
 }

@@ -1,0 +1,24 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BlockTransform	main.go	/^func BlockTransform(s string) []string {$/;"	f
+Host	main.go	/^type Host struct {$/;"	t
+addRecord	main.go	/^func addRecord(d *diskv.Diskv, name, hostInfo string) error {$/;"	f
+config	main.go	/^func (h *Host) config(info []string) error {$/;"	f
+getCurrentUser	config.go	/^func getCurrentUser() (string, error) {$/;"	f
+getHome	config.go	/^func getHome() (string, error) {$/;"	f
+getInput	main.go	/^func getInput() (string, error) {$/;"	f
+getPort	config.go	/^func getPort() int8 {$/;"	f
+getRecord	main.go	/^func getRecord(d *diskv.Diskv, name string) error {$/;"	f
+interactiveConfig	main.go	/^func (h *Host) interactiveConfig() error {$/;"	f
+listRecords	main.go	/^func listRecords(d *diskv.Diskv) error {$/;"	f
+loadConfig	config.go	/^func loadConfig(envFile string) {$/;"	f
+main	config.go	/^package main$/;"	p
+main	main.go	/^func main() {$/;"	f
+main	main.go	/^package main$/;"	p
+md5sum	main.go	/^func md5sum(s string) string {$/;"	f
+removeRecord	main.go	/^func removeRecord(d *diskv.Diskv, name string) error {$/;"	f
+transformBlockSize	main.go	/^const ($/;"	c
