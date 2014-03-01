@@ -8,6 +8,7 @@ BlockTransform	main.go	/^func BlockTransform(s string) []string {$/;"	f
 Host	main.go	/^type Host struct {$/;"	t
 addRecord	main.go	/^func addRecord(d *diskv.Diskv, name, hostInfo string) error {$/;"	f
 config	main.go	/^func (h *Host) config(info []string) error {$/;"	f
+configuration	file.go	/^const configuration = `$/;"	c
 getCurrentUser	config.go	/^func getCurrentUser() (string, error) {$/;"	f
 getHome	config.go	/^func getHome() (string, error) {$/;"	f
 getInput	main.go	/^func getInput() (string, error) {$/;"	f
@@ -17,8 +18,10 @@ interactiveConfig	main.go	/^func (h *Host) interactiveConfig() error {$/;"	f
 listRecords	main.go	/^func listRecords(d *diskv.Diskv) error {$/;"	f
 loadConfig	config.go	/^func loadConfig(envFile string) {$/;"	f
 main	config.go	/^package main$/;"	p
+main	file.go	/^package main$/;"	p
 main	main.go	/^func main() {$/;"	f
 main	main.go	/^package main$/;"	p
 md5sum	main.go	/^func md5sum(s string) string {$/;"	f
 removeRecord	main.go	/^func removeRecord(d *diskv.Diskv, name string) error {$/;"	f
 transformBlockSize	main.go	/^const ($/;"	c
+writeFile	file.go	/^func writeFile(d *diskv.Diskv) error {$/;"	f

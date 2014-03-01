@@ -193,6 +193,12 @@ func main() {
 			glog.Errorf("an error has occured when removing a record: %s\n", err.Error())
 			os.Exit(1)
 		}
+	case "write":
+		err := writeFile(d)
+		if err != nil {
+			glog.Errorf("an error has occured when writing out SSH configuration file: %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 
 	os.Exit(0)
