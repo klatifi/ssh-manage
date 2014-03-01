@@ -9,6 +9,7 @@ Host	main.go	/^type Host struct {$/;"	t
 addRecord	main.go	/^func addRecord(d *diskv.Diskv, name, hostInfo string) error {$/;"	f
 config	main.go	/^func (h *Host) config(info []string) error {$/;"	f
 configuration	file.go	/^const configuration = `$/;"	c
+getConfigPath	config.go	/^func getConfigPath() (string, error) {$/;"	f
 getCurrentUser	config.go	/^func getCurrentUser() (string, error) {$/;"	f
 getHome	config.go	/^func getHome() (string, error) {$/;"	f
 getInput	main.go	/^func getInput() (string, error) {$/;"	f

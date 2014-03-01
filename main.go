@@ -138,20 +138,19 @@ func BlockTransform(s string) []string {
 }
 
 func main() {
-	home, err := getHome()
+	configDir, err := getConfigPath()
 	if err != nil {
-		glog.Errorln(err)
-		os.Exit(1)
+		glog.Fatalln(err)
 	}
 
-	envFile := home + "/.ssh-manage.env"
+	envFile := configDir + "/ssh-manage.env"
 	_, err = os.Stat(envFile)
 	if err == nil {
 		loadConfig(envFile)
 	}
 
 	d := diskv.New(diskv.Options{
-		BasePath:     "data", // where the data is stored
+		BasePath:     configDir + "/hosts", // where the data is stored
 		Transform:    BlockTransform,
 		CacheSizeMax: 1024 * 1024, // 1MB
 	})

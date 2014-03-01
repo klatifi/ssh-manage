@@ -4,7 +4,9 @@ import (
 	"errors"
 	"os"
 	"os/user"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/subosito/gotenv"
 )
@@ -46,4 +48,32 @@ func getPort() int8 {
 		port = 22
 	}
 	return port
+}
+
+// Return the path to where we should keep the data store
+func getConfigPath() (string, error) {
+	var configDir string
+
+	xdgHome := os.Getenv("XDG_CONFIG_HOME")
+	home, err := getHome()
+	if err != nil {
+		return "", errors.New("could not detect a valid HOME directory")
+	}
+
+	if xdgHome != "" && strings.HasPrefix(xdgHome, "/") {
+		configDir = path.Join(xdgHome, "ssh-manage")
+	} else if home != "" && strings.HasPrefix(home, "/") {
+		configDir = path.Join(home, ".config", "ssh-manage")
+	} else {
+		return "", errors.New("could not detect valid XDG_CONFIG_HOME or HOME environment variables")
+	}
+
+	// if the configuration directory does not exist create it
+	if _, err = os.Stat(configDir); err != nil && os.IsNotExist(err) {
+		if err = os.MkdirAll(configDir, 0655); err != nil {
+			return "", errors.New("could not make configuration directory")
+		}
+	}
+
+	return configDir, nil
 }
