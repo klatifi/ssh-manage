@@ -140,7 +140,7 @@ func BlockTransform(s string) []string {
 func main() {
 	configDir, err := getConfigPath()
 	if err != nil {
-		glog.Fatalln(err)
+		panic(err)
 	}
 
 	envFile := configDir + "/ssh-manage.env"
