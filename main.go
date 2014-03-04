@@ -242,6 +242,7 @@ func addRecord(d *diskv.Diskv, name, hostInfo string) error {
 	if err != nil {
 		return err
 	}
+
 	d.Write(md5sum(name), []byte(val))
 	return nil
 }

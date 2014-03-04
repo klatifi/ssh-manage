@@ -61,9 +61,9 @@ func getConfigPath() (string, error) {
 	}
 
 	if xdgHome != "" && strings.HasPrefix(xdgHome, "/") {
-		configDir = path.Join(xdgHome, "ssh-manage")
+		configDir = path.Join(xdgHome, "ssh-manage/")
 	} else if home != "" && strings.HasPrefix(home, "/") {
-		configDir = path.Join(home, ".config", "ssh-manage")
+		configDir = path.Join(home, ".config", "ssh-manage/")
 	} else {
 		return "", errors.New("could not detect valid XDG_CONFIG_HOME or HOME environment variables")
 	}
