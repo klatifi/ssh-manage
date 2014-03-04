@@ -69,10 +69,8 @@ func getConfigPath() (string, error) {
 	}
 
 	// if the configuration directory does not exist create it
-	if _, err = os.Stat(configDir); err != nil && os.IsNotExist(err) {
-		if err = os.MkdirAll(configDir, 0655); err != nil {
-			return "", errors.New("could not make configuration directory")
-		}
+	if err = os.MkdirAll(configDir, 0655); err != nil {
+		return "", errors.New("could not make configuration directory")
 	}
 
 	return configDir, nil
