@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"fmt"
 
 	"github.com/subosito/gotenv"
 )
@@ -61,18 +62,18 @@ func getConfigPath() (string, error) {
 	}
 
 	if xdgHome != "" && strings.HasPrefix(xdgHome, "/") {
-		configDir = path.Join(xdgHome, "ssh-manage")
+		configDir = path.Join(xdgHome, "ssh-manage/")
 	} else if home != "" && strings.HasPrefix(home, "/") {
-		configDir = path.Join(home, ".config", "ssh-manage")
+		configDir = path.Join(home, ".config", "ssh-manage/")
 	} else {
 		return "", errors.New("could not detect valid XDG_CONFIG_HOME or HOME environment variables")
 	}
 
+        fmt.Println("configuration directory:", configDir)
+
 	// if the configuration directory does not exist create it
-	if _, err = os.Stat(configDir); err != nil && os.IsNotExist(err) {
-		if err = os.MkdirAll(configDir, 0655); err != nil {
-			return "", errors.New("could not make configuration directory")
-		}
+	if err = os.MkdirAll(configDir, 0755); err != nil {
+		return "", errors.New("could not make configuration directory")
 	}
 
 	return configDir, nil

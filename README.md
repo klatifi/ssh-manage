@@ -27,4 +27,42 @@ This tells ssh-manage to use port 2222 as the default SSH port.
 
 ## Usage
 
-TODO
+### Adding a host
+
+Adding a host can be done one of two ways
+
+#### Interactive
+
+The interactive method asks a series of questions to get the information needed 
+to create the host record.  Some of these fields can be left blank and defualts 
+will be used instead.
+
+    ssh-manage add example
+    Hostname(s) or alias(es) of the server: example.com
+    Hostname or IP address of the server: example.com
+    Port number of server: 22
+    User on server: john
+    SSH key: ~/.ssh/id_rsa
+
+#### Non-interactive
+
+The Non-interactive method only takes two fields hostname or IP address of the 
+server and which key to use.  Everything else defaults are used.
+
+    ssh-manage add example example.com:~/.ssh/id_rsa
+
+### Getting a host details
+
+    ssh-manage get example
+
+### Listing all hosts
+
+    ssh-manage List
+
+### Remove a host
+
+    ssh-manage rm example
+
+### Write the ssh configuration file
+
+    ssh-manage Write

@@ -22,3 +22,5 @@ _testmain.go
 *.exe
 data
 config
+ssh-manage
+.codebox-configurations.json

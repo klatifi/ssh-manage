@@ -140,7 +140,7 @@ func BlockTransform(s string) []string {
 func main() {
 	configDir, err := getConfigPath()
 	if err != nil {
-		glog.Fatalln(err)
+		panic(err)
 	}
 
 	envFile := configDir + "/ssh-manage.env"
@@ -242,6 +242,7 @@ func addRecord(d *diskv.Diskv, name, hostInfo string) error {
 	if err != nil {
 		return err
 	}
+
 	d.Write(md5sum(name), []byte(val))
 	return nil
 }
