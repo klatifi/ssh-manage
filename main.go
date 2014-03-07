@@ -279,6 +279,7 @@ func listRecords(d *diskv.Diskv) error {
 	return nil
 }
 
+// Given a record when remove it from from the datastore.
 func removeRecord(d *diskv.Diskv, name string) error {
 	err := d.Erase(md5sum(name))
 	if err != nil {
