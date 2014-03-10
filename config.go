@@ -2,12 +2,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/user"
 	"path"
 	"strconv"
 	"strings"
-	"fmt"
 
 	"github.com/subosito/gotenv"
 )
@@ -69,7 +69,7 @@ func getConfigPath() (string, error) {
 		return "", errors.New("could not detect valid XDG_CONFIG_HOME or HOME environment variables")
 	}
 
-        fmt.Println("configuration directory:", configDir)
+	fmt.Println("configuration directory:", configDir)
 
 	// if the configuration directory does not exist create it
 	if err = os.MkdirAll(configDir, 0755); err != nil {

@@ -12,13 +12,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
+	"github.com/divoxx/llog"
 	"github.com/peterbourgon/diskv"
 )
 
 const (
 	transformBlockSize = 2 // grouping of chars per directory depth
 )
+
+var l *llog.Log
 
 // Host contains the configuration details for a SSH Host.
 type Host struct {
@@ -138,6 +140,9 @@ func BlockTransform(s string) []string {
 }
 
 func main() {
+	// TODO allow setting log level via a flag
+
+	l = llog.New(os.Stdout, llog.DEBUG)
 	configDir, err := getConfigPath()
 	if err != nil {
 		panic(err)
@@ -157,7 +162,7 @@ func main() {
 
 	flag.Parse()
 	if flag.NArg() == 0 {
-		glog.Errorln("please supply a command")
+		logHandler("ERROR", "please supply a command")
 		// TODO list supported commands (Redirect to help message or usage text?)
 		os.Exit(1)
 	}
@@ -171,36 +176,57 @@ func main() {
 
 		err = addRecord(d, strings.TrimSpace(flag.Arg(1)), hostInfo)
 		if err != nil {
-			glog.Errorf("an error has occured when adding a new record: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed creating a new record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "get":
 		err := getRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			glog.Errorf("an error has occured when fetching record details: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed fetching record details: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "list":
 		err := listRecords(d)
 		if err != nil {
-			glog.Errorf("an error has occured when fetching all records: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed fetching all records: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "rm":
 		err := removeRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			glog.Errorf("an error has occured when removing a record: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed removing record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "write":
 		err := writeFile(d)
 		if err != nil {
-			glog.Errorf("an error has occured when writing out SSH configuration file: %s\n", err.Error())
+			logHandler("ERROR",
+				fmt.Sprintf("failed when writing out SSH configuration file: %s\n",
+					err.Error()))
 			os.Exit(1)
 		}
 	}
 
 	os.Exit(0)
+}
+
+func logHandler(lvl, msg string) {
+	switch lvl {
+	case "DEBUG":
+		l.Debug("[DEBUG]", logTime(), msg)
+	case "INFO":
+		l.Info("[INFO]", logTime(), msg)
+	case "WARN":
+		l.Warning("[WARNING]", logTime(), msg)
+	case "ERROR":
+		l.Error("[ERROR]", logTime(), msg)
+	default:
+		return
+	}
+}
+
+func logTime() string {
+	return time.New().Format(time.RFC3339)
 }
 
 func md5sum(s string) string {
