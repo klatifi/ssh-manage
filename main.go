@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+        "time"
 
 	"github.com/divoxx/llog"
 	"github.com/peterbourgon/diskv"
@@ -176,25 +177,29 @@ func main() {
 
 		err = addRecord(d, strings.TrimSpace(flag.Arg(1)), hostInfo)
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed creating a new record: %s\n", err.Error()))
+			logHandler("ERROR",
+			        fmt.Sprintf("failed creating a new record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "get":
 		err := getRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed fetching record details: %s\n", err.Error()))
+			logHandler("ERROR",
+			        fmt.Sprintf("failed fetching record details: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "list":
 		err := listRecords(d)
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed fetching all records: %s\n", err.Error()))
+			logHandler("ERROR",
+			        fmt.Sprintf("failed fetching all records: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "rm":
 		err := removeRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed removing record: %s\n", err.Error()))
+			logHandler("ERROR",
+			        fmt.Sprintf("failed removing record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "write":
@@ -205,6 +210,13 @@ func main() {
 					err.Error()))
 			os.Exit(1)
 		}
+	case "update":
+	        err := updateRecord(d, strings.TrimSpace(flag.Arg(1)))
+	        if err != nil {
+	                logHandler("ERROR",
+	                        fmt.Sprintf("faild updating record: %s\n", err.Error()))
+	                os.Exit(1)
+	        }
 	}
 
 	os.Exit(0)
@@ -226,7 +238,7 @@ func logHandler(lvl, msg string) {
 }
 
 func logTime() string {
-	return time.New().Format(time.RFC3339)
+	return time.Now().Format(time.RFC3339)
 }
 
 func md5sum(s string) string {
