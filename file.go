@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"text/template"
 
@@ -31,12 +32,14 @@ func writeFile(d *diskv.Diskv) error {
 	for key := range keyChan {
 		val, err := d.Read(key)
 		if err != nil {
+		        logHandler("DEBUG", fmt.Sprintf("error reading data store: %v", err))
 			return err
 		}
 
 		var t Host
 		err = json.Unmarshal(val, &t)
 		if err != nil {
+		        logHandler("DEBUG", fmt.Sprintf("error parsing JSON: %v", err))
 			return err
 		}
 		h = append(h, t)
@@ -44,23 +47,27 @@ func writeFile(d *diskv.Diskv) error {
 
 	home, err := getHome()
 	if err != nil {
+	        logHandler("DEBUG", fmt.Sprintf("error geting home directory: %v", err))
 		return errors.New("failed to get vaild home directory")
 	}
 
-	configFile := home + ".ssh/config"
+	configFile := home + "/.ssh/config"
 	fo, err := os.Create(configFile)
 	if err != nil {
+	        logHandler("DEBUG", fmt.Sprintf("error writing file: %v", err))
 		return errors.New("could not write SSH configuration file")
 	}
 
 	temp := template.Must(template.New("configuration").Parse(configuration))
 	err = temp.Execute(fo, h)
 	if err != nil {
+	        logHandler("DEBUG", fmt.Sprintf("error parsing template file: %v", err))
 		return err
 	}
 
 	err = fo.Close()
 	if err != nil {
+	        logHandler("DEBUG", fmt.Sprintf("error writing file: %v", err))
 		return errors.New("could not close SSH configuration file")
 	}
 	return nil
