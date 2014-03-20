@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/divoxx/llog"
 	"github.com/peterbourgon/diskv"
@@ -226,7 +227,7 @@ func logHandler(lvl, msg string) {
 }
 
 func logTime() string {
-	return time.New().Format(time.RFC3339)
+	return time.Now().Format(time.RFC3339)
 }
 
 func md5sum(s string) string {
