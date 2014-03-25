@@ -161,6 +161,7 @@ func main() {
 		CacheSizeMax: 1024 * 1024, // 1MB
 	})
 
+	flag.Usage = usage
 	flag.Parse()
 	if flag.NArg() == 0 {
 		logHandler("ERROR", "please supply a command")
@@ -209,9 +210,29 @@ func main() {
 					err.Error()))
 			os.Exit(1)
 		}
+	default:
+		usage()
+		os.Exit(1)
 	}
 
 	os.Exit(0)
+}
+
+func usage() {
+	command := os.Args[0]
+	fmt.Fprintf(os.Stderr,
+		`Usage: %s [options] [command] [arguments]
+%s requires one of the following commands:
+
+add:   Add a new host record to the datastore
+get:   Get details about a host record from the datastore
+list:  Lists all records in the datastore
+rm:    Removes a record from the datastore
+write: Write out SSH configuration file
+
+Options:
+  --help: Displays this help message
+`, command, command)
 }
 
 func logHandler(lvl, msg string) {
