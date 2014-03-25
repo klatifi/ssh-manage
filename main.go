@@ -141,9 +141,8 @@ func BlockTransform(s string) []string {
 }
 
 func main() {
-	// TODO allow setting log level via a flag
+	ll := flag.String("log", "ERROR", "Set the log level")
 
-	l = llog.New(os.Stdout, llog.DEBUG)
 	configDir, err := getConfigPath()
 	if err != nil {
 		panic(err)
@@ -163,6 +162,12 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
+
+	logLevel := getLogLevel(*ll)
+	l = llog.New(os.Stdout, logLevel)
+
+        logHandler("DEBUG", fmt.Sprintln("configuration directory:", configDir))
+
 	if flag.NArg() == 0 {
 		logHandler("ERROR", "please supply a command")
 		// TODO list supported commands (Redirect to help message or usage text?)
@@ -233,6 +238,21 @@ write: Write out SSH configuration file
 Options:
   --help: Displays this help message
 `, command, command)
+}
+
+func getLogLevel(ll string) llog.Level {
+        switch ll {
+                case "debug":
+                return llog.DEBUG
+                case "info":
+                return llog.INFO
+                case "warn":
+                return llog.WARNING
+                case "error":
+                return llog.ERROR
+                default:
+                return llog.ERROR
+        }
 }
 
 func logHandler(lvl, msg string) {

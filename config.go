@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/user"
 	"path"
@@ -68,8 +67,6 @@ func getConfigPath() (string, error) {
 	} else {
 		return "", errors.New("could not detect valid XDG_CONFIG_HOME or HOME environment variables")
 	}
-
-	logHandler("DEBUG", fmt.Sprintln("configuration directory:", configDir))
 
 	// if the configuration directory does not exist create it
 	if err = os.MkdirAll(configDir, 0755); err != nil {
