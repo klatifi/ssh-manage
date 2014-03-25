@@ -168,9 +168,9 @@ func main() {
 		os.Exit(1)
 	}
 
-        // TODO add ability to update a record
-        // TODO add the ability to set if a record or records should get 
-        // printed.  This needs to be host dependant.
+	// TODO add ability to update a record
+	// TODO add the ability to set if a record or records should get
+	// printed.  This needs to be host dependant.
 	switch flag.Arg(0) {
 	case "add":
 		var hostInfo string
