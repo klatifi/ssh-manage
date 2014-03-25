@@ -11,14 +11,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/golang/glog"
+	"github.com/divoxx/llog"
 	"github.com/peterbourgon/diskv"
 )
 
 const (
 	transformBlockSize = 2 // grouping of chars per directory depth
 )
+
+var l *llog.Log
 
 // Host contains the configuration details for a SSH Host.
 type Host struct {
@@ -97,7 +100,7 @@ func (h *Host) interactiveConfig() error {
 		}
 		h.Port = int8(port)
 	} else {
-		h.Port = 22
+		h.Port = getPort()
 	}
 
 	fmt.Print("User on server: ")
@@ -138,31 +141,42 @@ func BlockTransform(s string) []string {
 }
 
 func main() {
-	home, err := getHome()
+	ll := flag.String("log", "ERROR", "Set the log level")
+
+	configDir, err := getConfigPath()
 	if err != nil {
-		glog.Errorln(err)
-		os.Exit(1)
+		panic(err)
 	}
-	
-	envFile := home+"/.ssh-manage.env"
+
+	envFile := configDir + "/ssh-manage.env"
 	_, err = os.Stat(envFile)
 	if err == nil {
 		loadConfig(envFile)
 	}
-	
+
 	d := diskv.New(diskv.Options{
-		BasePath:     "data", // where the data is stored
+		BasePath:     configDir + "/hosts", // where the data is stored
 		Transform:    BlockTransform,
 		CacheSizeMax: 1024 * 1024, // 1MB
 	})
 
+	flag.Usage = usage
 	flag.Parse()
+
+	logLevel := getLogLevel(*ll)
+	l = llog.New(os.Stdout, logLevel)
+
+        logHandler("DEBUG", fmt.Sprintln("configuration directory:", configDir))
+
 	if flag.NArg() == 0 {
-		glog.Errorln("please supply a command")
+		logHandler("ERROR", "please supply a command")
 		// TODO list supported commands (Redirect to help message or usage text?)
 		os.Exit(1)
 	}
 
+	// TODO add ability to update a record
+	// TODO add the ability to set if a record or records should get
+	// printed.  This needs to be host dependant.
 	switch flag.Arg(0) {
 	case "add":
 		var hostInfo string
@@ -172,30 +186,92 @@ func main() {
 
 		err = addRecord(d, strings.TrimSpace(flag.Arg(1)), hostInfo)
 		if err != nil {
-			glog.Errorf("an error has occured when adding a new record: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed creating a new record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "get":
 		err := getRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			glog.Errorf("an error has occured when fetching record details: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed fetching record details: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "list":
 		err := listRecords(d)
 		if err != nil {
-			glog.Errorf("an error has occured when fetching all records: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed fetching all records: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "rm":
 		err := removeRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			glog.Errorf("an error has occured when removing a record: %s\n", err.Error())
+			logHandler("ERROR", fmt.Sprintf("failed removing record: %s\n", err.Error()))
 			os.Exit(1)
 		}
+	case "write":
+		err := writeFile(d)
+		if err != nil {
+			logHandler("ERROR",
+				fmt.Sprintf("failed when writing out SSH configuration file: %s\n",
+					err.Error()))
+			os.Exit(1)
+		}
+	default:
+		usage()
+		os.Exit(1)
 	}
 
 	os.Exit(0)
+}
+
+func usage() {
+	command := os.Args[0]
+	fmt.Fprintf(os.Stderr,
+		`Usage: %s [options] [command] [arguments]
+%s requires one of the following commands:
+
+add:   Add a new host record to the datastore
+get:   Get details about a host record from the datastore
+list:  Lists all records in the datastore
+rm:    Removes a record from the datastore
+write: Write out SSH configuration file
+
+Options:
+  --help: Displays this help message
+`, command, command)
+}
+
+func getLogLevel(ll string) llog.Level {
+        switch ll {
+                case "debug":
+                return llog.DEBUG
+                case "info":
+                return llog.INFO
+                case "warn":
+                return llog.WARNING
+                case "error":
+                return llog.ERROR
+                default:
+                return llog.ERROR
+        }
+}
+
+func logHandler(lvl, msg string) {
+	switch lvl {
+	case "DEBUG":
+		l.Debug("[DEBUG]", logTime(), msg)
+	case "INFO":
+		l.Info("[INFO]", logTime(), msg)
+	case "WARN":
+		l.Warning("[WARNING]", logTime(), msg)
+	case "ERROR":
+		l.Error("[ERROR]", logTime(), msg)
+	default:
+		return
+	}
+}
+
+func logTime() string {
+	return time.Now().Format(time.RFC3339)
 }
 
 func md5sum(s string) string {
@@ -237,6 +313,7 @@ func addRecord(d *diskv.Diskv, name, hostInfo string) error {
 	if err != nil {
 		return err
 	}
+
 	d.Write(md5sum(name), []byte(val))
 	return nil
 }
@@ -274,6 +351,7 @@ func listRecords(d *diskv.Diskv) error {
 	return nil
 }
 
+// Given a record when remove it from from the datastore.
 func removeRecord(d *diskv.Diskv, name string) error {
 	err := d.Erase(md5sum(name))
 	if err != nil {
