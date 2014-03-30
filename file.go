@@ -21,7 +21,7 @@ Host {{ .Name }}
     Port {{ .Port }}
     User {{ .User }}
     IdentityFile {{ .Key }}
-    ServerKeepAlive {{ .KeepAlive }}
+    ServerAliveInterval {{ .KeepAlive }}
 
 {{ end }}
 `
