@@ -226,7 +226,7 @@ func main() {
 func usage() {
 	command := os.Args[0]
 	fmt.Fprintf(os.Stderr,
-		`Usage: %s [options] [command] [arguments]
+		`Usage: %s [options] {add|get|list|rm|write} [arguments]
 %s requires one of the following commands:
 
 add:   Add a new host record to the datastore
