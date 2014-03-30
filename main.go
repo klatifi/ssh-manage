@@ -19,6 +19,7 @@ import (
 
 const (
 	transformBlockSize = 2 // grouping of chars per directory depth
+	VERSION            = 0.1
 )
 
 var l *llog.Log
@@ -129,6 +130,60 @@ func (h *Host) interactiveConfig() error {
 	return nil
 }
 
+// Update the information from the user by asking a series of questions
+func (h *Host) updateConfig() error {
+	fmt.Printf("Hostname(s) or aliases for the server (%s): ", h.Name)
+	val, err := getInput()
+	if err != nil {
+		return err
+	}
+	if val != "" {
+		h.Name = val
+	}
+
+	fmt.Printf("Hostname(s) or IP addresses of the server (%s): ", h.IP)
+	val, err = getInput()
+	if err != nil {
+		return nil
+	}
+	if val != "" {
+		h.IP = val
+	}
+
+	fmt.Printf("Port number of the server (%d): ", h.Port)
+	val, err = getInput()
+	if err != nil {
+		return nil
+	}
+	if val != "" {
+		port, err := strconv.Atoi(val)
+		if err != nil {
+			return err
+		}
+		h.Port = int8(port)
+	}
+
+	fmt.Printf("User on the server (%s): ", h.User)
+	val, err = getInput()
+	if err != nil {
+		return nil
+	}
+	if val != "" {
+		h.User = val
+	}
+
+	fmt.Printf("SSH key (%s): ", h.Key)
+	val, err = getInput()
+	if err != nil {
+		return nil
+	}
+	if val != "" {
+		h.Key = val
+	}
+
+	return nil
+}
+
 // BlockTransform builds out the directory structure for file.
 func BlockTransform(s string) []string {
 	sliceSize := len(s) / transformBlockSize
@@ -142,6 +197,7 @@ func BlockTransform(s string) []string {
 
 func main() {
 	ll := flag.String("log", "ERROR", "Set the log level")
+	version := flag.Bool("version", false, "Display the version number")
 
 	configDir, err := getConfigPath()
 	if err != nil {
@@ -163,10 +219,16 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
+	if *version {
+		// TODO print version number
+		fmt.Printf("%s version: %v\n", os.Args[0], VERSION)
+		os.Exit(0)
+	}
+
 	logLevel := getLogLevel(*ll)
 	l = llog.New(os.Stdout, logLevel)
 
-        logHandler("DEBUG", fmt.Sprintln("configuration directory:", configDir))
+	logHandler("DEBUG", fmt.Sprintln("configuration directory:", configDir))
 
 	if flag.NArg() == 0 {
 		logHandler("ERROR", "please supply a command")
@@ -186,25 +248,29 @@ func main() {
 
 		err = addRecord(d, strings.TrimSpace(flag.Arg(1)), hostInfo)
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed creating a new record: %s\n", err.Error()))
+			logHandler("ERROR",
+				fmt.Sprintf("failed creating a new record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "get":
 		err := getRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed fetching record details: %s\n", err.Error()))
+			logHandler("ERROR",
+				fmt.Sprintf("failed fetching record details: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "list":
 		err := listRecords(d)
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed fetching all records: %s\n", err.Error()))
+			logHandler("ERROR",
+				fmt.Sprintf("failed fetching all records: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "rm":
 		err := removeRecord(d, strings.TrimSpace(flag.Arg(1)))
 		if err != nil {
-			logHandler("ERROR", fmt.Sprintf("failed removing record: %s\n", err.Error()))
+			logHandler("ERROR",
+				fmt.Sprintf("failed removing record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	case "write":
@@ -213,6 +279,18 @@ func main() {
 			logHandler("ERROR",
 				fmt.Sprintf("failed when writing out SSH configuration file: %s\n",
 					err.Error()))
+			os.Exit(1)
+		}
+	case "update":
+		if flag.Arg(1) == "" {
+			logHandler("ERROR", "update requires an argument")
+			os.Exit(1)
+		}
+
+		err := updateRecord(d, strings.TrimSpace(flag.Arg(1)))
+		if err != nil {
+			logHandler("ERROR",
+				fmt.Sprintf("faild updating record: %s\n", err.Error()))
 			os.Exit(1)
 		}
 	default:
@@ -226,7 +304,7 @@ func main() {
 func usage() {
 	command := os.Args[0]
 	fmt.Fprintf(os.Stderr,
-		`Usage: %s [options] [command] [arguments]
+		`Usage: %s [options] {add|get|list|rm|write|update} [arguments]
 %s requires one of the following commands:
 
 add:   Add a new host record to the datastore
@@ -241,18 +319,18 @@ Options:
 }
 
 func getLogLevel(ll string) llog.Level {
-        switch ll {
-                case "debug":
-                return llog.DEBUG
-                case "info":
-                return llog.INFO
-                case "warn":
-                return llog.WARNING
-                case "error":
-                return llog.ERROR
-                default:
-                return llog.ERROR
-        }
+	switch ll {
+	case "debug":
+		return llog.DEBUG
+	case "info":
+		return llog.INFO
+	case "warn":
+		return llog.WARNING
+	case "error":
+		return llog.ERROR
+	default:
+		return llog.ERROR
+	}
 }
 
 func logHandler(lvl, msg string) {
@@ -351,11 +429,39 @@ func listRecords(d *diskv.Diskv) error {
 	return nil
 }
 
-// Given a record when remove it from from the datastore.
+// Given a record remove it from from the datastore.
 func removeRecord(d *diskv.Diskv, name string) error {
 	err := d.Erase(md5sum(name))
 	if err != nil {
 		return fmt.Errorf("no configuration found for %s\n", name)
 	}
+	return nil
+}
+
+// Given a record allow settings to be updated.
+func updateRecord(d *diskv.Diskv, name string) error {
+	var h Host
+	val, err := d.Read(md5sum(name))
+	if err != nil {
+		return fmt.Errorf("no configuration found for %s\n", name)
+	}
+
+	err = json.Unmarshal(val, &h)
+	if err != nil {
+		return fmt.Errorf("failed to parse the configuration: %s\n", err.Error())
+	}
+
+	err = h.updateConfig()
+	if err != nil {
+		return fmt.Errorf("failed to update the host information: %s", err.Error())
+	}
+
+	val, err = json.Marshal(h)
+	if err != nil {
+		return err
+	}
+
+	d.Write(md5sum(name), []byte(val))
+
 	return nil
 }
