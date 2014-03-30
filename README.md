@@ -66,3 +66,11 @@ server and which key to use.  Everything else defaults are used.
 ### Write the ssh configuration file
 
     ssh-manage Write
+
+### Update a host details
+
+    ssh-manage update example
+
+This works much like the interactive add, the major differance is that the
+current value is displayed in perentacies.  If the field is left blank then
+no change will be made to that field.
