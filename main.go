@@ -19,6 +19,7 @@ import (
 
 const (
 	transformBlockSize = 2 // grouping of chars per directory depth
+	VERSION            = 0.1
 )
 
 var l *llog.Log
@@ -196,6 +197,7 @@ func BlockTransform(s string) []string {
 
 func main() {
 	ll := flag.String("log", "ERROR", "Set the log level")
+	version := flag.Bool("version", false, "Display the version number")
 
 	configDir, err := getConfigPath()
 	if err != nil {
@@ -216,6 +218,12 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
+
+	if *version {
+		// TODO print version number
+		fmt.Printf("%s version: %v\n", os.Args[0], VERSION)
+		os.Exit(0)
+	}
 
 	logLevel := getLogLevel(*ll)
 	l = llog.New(os.Stdout, logLevel)
